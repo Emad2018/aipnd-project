@@ -42,12 +42,12 @@ if in_args.gpu:
 else:
     device = "cpu"
 if(in_args.arch == "densenet"):
-    model = thelp.densenet121_FlowerModel()
+    model = thelp.densenet121_FlowerModel(in_args.nhu)
 else:
-    model = thelp.vgg11_FlowerModel()
+    model = thelp.vgg11_FlowerModel(in_args.nhu)
 
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(model.classifier.parameters(), lr=in_args.lr)
 print(in_args)
 thelp.train_model(model, dataloaders, criterion,
-                  optimizer, image_datasets, device=device, epochs=in_args.epochs)
+                  optimizer, image_datasets, device=device, epochs=in_args.epochs, nhu=in_args.nhu)

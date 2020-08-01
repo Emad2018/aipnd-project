@@ -12,29 +12,30 @@ import argparse
 
 
 def load_checkpoint(checkpoint_path, model):
+    checkpoint = torch.load(checkpoint_path)
     if(model == "vgg"):
-        checkpoint = torch.load(checkpoint_path)
+        nhu = checkpoint['nhu']
         model = models.vgg11(pretrained=True)
         for param in model.parameters():
             param.requires_grad = False
         classifier = nn.Sequential(OrderedDict([
-            ('fc1', nn.Linear(25088, 1024)),
+            ('fc1', nn.Linear(25088, nhu)),
             ('relu', nn.ReLU()),
-            ('fc2', nn.Linear(1024, 102)),
+            ('fc2', nn.Linear(nhu, 102)),
             ('output', nn.LogSoftmax(dim=1))
         ]))
         model.classifier = classifier
         model.load_state_dict(checkpoint['state_dict'])
         model.class_to_idx = checkpoint['class_to_idx']
     elif(model == "densenet"):
-        checkpoint = torch.load(checkpoint_path)
+        nhu = checkpoint['nhu']
         model = models.densenet121(pretrained=True)
         for param in model.parameters():
             param.requires_grad = False
         classifier = nn.Sequential(OrderedDict([
-            ('fc1', nn.Linear(1024, 512)),
+            ('fc1', nn.Linear(1024, nhu)),
             ('relu', nn.ReLU()),
-            ('fc2', nn.Linear(512, 102)),
+            ('fc2', nn.Linear(nhu, 102)),
             ('output', nn.LogSoftmax(dim=1))
         ]))
         model.classifier = classifier

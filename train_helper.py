@@ -11,39 +11,40 @@ import json
 import argparse
 
 
-def vgg11_FlowerModel():
+def vgg11_FlowerModel(nhu):
     model = models.vgg11(pretrained=True)
     model.name = "vgg"
     for param in model.parameters():
         param.requires_grad = False
     classifier = nn.Sequential(OrderedDict([
-                              ('fc1', nn.Linear(25088, 1024)),
+                              ('fc1', nn.Linear(25088, nhu)),
                               ('relu', nn.ReLU()),
-                              ('fc2', nn.Linear(1024, 102)),
+                              ('fc2', nn.Linear(nhu, 102)),
                               ('output', nn.LogSoftmax(dim=1))
     ]))
     model.classifier = classifier
     return model
 
 
-def densenet121_FlowerModel():
+def densenet121_FlowerModel(nhu):
     model = models.densenet121(pretrained=True)
     model.name = "densenet"
     for param in model.parameters():
         param.requires_grad = False
     classifier = nn.Sequential(OrderedDict([
-                              ('fc1', nn.Linear(1024, 512)),
+                              ('fc1', nn.Linear(1024, nhu)),
                               ('relu', nn.ReLU()),
-                              ('fc2', nn.Linear(512, 102)),
+                              ('fc2', nn.Linear(nhu, 102)),
                               ('output', nn.LogSoftmax(dim=1))
     ]))
     model.classifier = classifier
     return model
 
 
-def save_model(model, path_name):
+def save_model(model, path_name, nhu):
 
     checkpoint = {
+        'nhu': nhu,
         'class_to_idx': model.class_to_idx,
         'state_dict': model.state_dict(),
 
@@ -51,7 +52,7 @@ def save_model(model, path_name):
     torch.save(checkpoint, path_name+'.pth')
 
 
-def train_model(model, dataloaders, criterion, optimizer, image_datasets, epochs=5, print_every=5, device="cpu"):
+def train_model(model, dataloaders, criterion, optimizer, image_datasets, nhu, epochs=5, print_every=5, device="cpu"):
     steps = 0
     prev_accuracy = 0
     running_loss = 0
@@ -99,7 +100,7 @@ def train_model(model, dataloaders, criterion, optimizer, image_datasets, epochs
                 model.train()
         if(accuracy > prev_accuracy):
             prev_accuracy = accuracy
-            save_model(model, model.name)
+            save_model(model, model.name, nhu)
             print("saving checkpoint")
     return model
 
@@ -161,6 +162,8 @@ def get_input_args():
                         help='learning_rate')
     parser.add_argument('--epochs', type=int, default=5,
                         help='epochs')
+    parser.add_argument('--nhu', type=int, default=512,
+                        help='number of heddien unit')
     # Assigns variable in_args to parse_args()
     in_args = parser.parse_args()
 
